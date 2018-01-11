@@ -1,6 +1,6 @@
 {
   "name": "async-iterator-from",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Create async iterators from Arrays, EventEmitters, and Streams",
   "main": "index.js",
   "options": {

@@ -2,7 +2,7 @@
  * Strategy augmented from graphql-subscriptions
  * https://github.com/graphql/graphql-js/blob/master
  * /src/subscription/__tests__/eventEmitterAsyncIterator.js
- * 
+ *
  * Added support for debounce
  */
 
@@ -23,7 +23,7 @@ function call(func, ...args) {
   }
 }
 
-class AsyncIterator {
+class AsyncIteratorBacking {
   constructor(values, options) {
     let _values = values;
     let _options = options;
@@ -40,13 +40,15 @@ class AsyncIterator {
       onNext,
       onPush,
       onEnd
-    } = isObject(_options) ? _options : {};
-    const _this = this;
+    } = Object.assign({}, _options);
+
+    this.done = false;
+    this.onThrow = onThrow;
+    this.onReturn = onReturn;
     this.onPush = onPush;
     this.onEnd = onEnd;
     this.onNext = onNext;
     this.timeout = null;
-    this.active = true;
     this.dataQueue = Array.isArray(_values) ? _values.slice() : [];
     this.awaitQueue = [];
     this.debounce = typeof debounce === 'number' && debounce > 0 ?
@@ -59,19 +61,22 @@ class AsyncIterator {
       values.length = 0;
       values.push = value => this._push(value);
     }
+  }
 
+  iterator() {
+    const _this = this;
     // build the iterator
     const iterator = {
       next() {
-        return _this.active ? _this._next() : iterator.return();
+        return _this.done ? iterator.return() : _this._next();
       },
       return() {
-        call(onReturn);
+        call(this.onReturn);
         _this._end();
         return Promise.resolve({ value: undefined, done: true });
       },
       throw(error) {
-        call(onThrow, error);
+        call(this.onThrow, error);
         _this._end();
         return Promise.reject(error);
       },
@@ -86,7 +91,7 @@ class AsyncIterator {
 
   /**
    * Handles a push request with optional debounce
-   * @param {*} value 
+   * @param {*} value
    */
   _push(value) {
     if (!this.debounce) {
@@ -103,7 +108,7 @@ class AsyncIterator {
 
   /**
    * Pushes a value into the queue
-   * @param {*} value 
+   * @param {*} value
    */
   _pushValue(value) {
     call(this.onPush, value);
@@ -124,6 +129,11 @@ class AsyncIterator {
           value: this.dataQueue.shift(),
           done: false
         });
+      } else if (this.done) {
+        return resolve({
+          value: undefined,
+          done: true
+        });
       }
       this.awaitQueue.push(resolve);
     });
@@ -133,9 +143,10 @@ class AsyncIterator {
    * Ends the iterator
    */
   _end() {
-    if (this.active) {
-      this.active = false;
+    if (!this.done) {
+      this.done = true;
       call(this.onEnd);
+      call(this.cleanup);
       this.awaitQueue.forEach(resolve => {
         resolve({ value: undefined, done: true });
       });
@@ -145,9 +156,15 @@ class AsyncIterator {
   }
 }
 
+class AsyncIterator {
+  constructor(...args) {
+    return new AsyncIteratorBacking(...args).iterator();
+  }
+}
+
 /**
 * Default, create iterator from an array
-* @param {*} array 
+* @param {*} array
 */
 AsyncIterator.fromArray = (array, options) => {
   return new AsyncIterator(array, options);
@@ -155,32 +172,52 @@ AsyncIterator.fromArray = (array, options) => {
 
 /**
 * Create an iterator from a nodejs stream
-* @param {*} stream 
-* @param {*} options 
+* @param {*} stream
+* @param {*} options
 */
 AsyncIterator.fromStream = (stream, options) => {
   const array = [];
-  const iterator = new AsyncIterator(array, options);
-  stream.on('data', value => array.push(value));
-  stream.on('close', () => iterator.return());
-  return iterator;
+  const opts = Object.assign({}, options);
+  const DATA = opts.dataEvent || 'data';
+  const CLOSE = opts.closeEvent || 'close';
+  const backing = new AsyncIteratorBacking(array, opts);
+  stream.on(DATA, value => array.push(value));
+  stream.on(CLOSE, () => {
+    backing.done = true;
+  });
+  return backing.iterator();
 };
 
 /**
 * Create an iterator from an event emitter
-* @param {*} emitter 
-* @param {*} event 
-* @param {*} options 
+* @param {*} emitter
+* @param {*} event
+* @param {*} options
 */
 AsyncIterator.fromEvent = (emitter, event, options) => {
   const array = [];
-  const opts = Object.assign({}, options, {
-    onEnd: () => emitter.removeAllListeners(event)
-  });
-  const iterator = new AsyncIterator(array, opts);
+  const opts = Object.assign({}, options);
+  const backing = new AsyncIteratorBacking(array, opts);
+  const closeEvent = opts.closeEvent || null;
+  if (closeEvent) {
+    emitter.on(closeEvent, () => {
+      backing.done = true;
+    });
+  }
+  backing.cleanup = () => {
+    emitter.removeAllListeners(event);
+    if (closeEvent) {
+      emitter.removeAllListeners(closeEvent);
+    }
+  };
   emitter.on(event, value => array.push(value));
-  return iterator;
+  return backing.iterator();
 };
+
+/**
+ * Export the backing so that it can be extended
+ */
+AsyncIterator.Backing = AsyncIteratorBacking;
 
 // export the iterator class
 export default AsyncIterator;
