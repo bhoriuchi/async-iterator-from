@@ -166,7 +166,7 @@ class AsyncIterator {
 * Default, create iterator from an array
 * @param {*} array
 */
-AsyncIterator.fromArray = (array, options) => {
+export const fromArray = (array, options) => {
   return new AsyncIterator(array, options);
 };
 
@@ -175,7 +175,7 @@ AsyncIterator.fromArray = (array, options) => {
 * @param {*} stream
 * @param {*} options
 */
-AsyncIterator.fromStream = (stream, options) => {
+export const fromStream = (stream, options) => {
   const array = [];
   const opts = Object.assign({}, options);
   const DATA = opts.dataEvent || 'data';
@@ -194,7 +194,7 @@ AsyncIterator.fromStream = (stream, options) => {
 * @param {*} event
 * @param {*} options
 */
-AsyncIterator.fromEvent = (emitter, event, options) => {
+export const fromEvent = (emitter, event, options) => {
   const array = [];
   const opts = Object.assign({}, options);
   const backing = new AsyncIteratorBacking(array, opts);
@@ -218,6 +218,10 @@ AsyncIterator.fromEvent = (emitter, event, options) => {
  * Export the backing so that it can be extended
  */
 AsyncIterator.Backing = AsyncIteratorBacking;
+
+AsyncIterator.fromArray = fromArray;
+AsyncIterator.fromStream = fromStream;
+AsyncIterator.fromEvent = fromEvent;
 
 // export the iterator class
 export default AsyncIterator;
