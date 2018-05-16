@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { EventEmitter } from 'events';
 import emitStream from 'emit-stream';
 import { forAwaitEach } from 'iterall';
-import AsyncIterator from '../index';
+import { AsyncIterator } from '../index';
 
 describe('Stream test', function () {
   it('should write 3 items', function (done) {

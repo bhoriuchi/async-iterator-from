@@ -156,7 +156,7 @@ class AsyncIteratorBacking {
   }
 }
 
-class AsyncIterator {
+export class AsyncIterator {
   constructor(...args) {
     return new AsyncIteratorBacking(...args).iterator();
   }
@@ -222,6 +222,3 @@ AsyncIterator.Backing = AsyncIteratorBacking;
 AsyncIterator.fromArray = fromArray;
 AsyncIterator.fromStream = fromStream;
 AsyncIterator.fromEvent = fromEvent;
-
-// export the iterator class
-export default AsyncIterator;
