@@ -4,7 +4,7 @@ Create async iterators from Arrays, EventEmitters, and Streams
 ### Impractical Example
 
 ```js
-import AsyncIterator from 'async-iterator-from';
+import { AsyncIterator } from 'async-iterator-from';
 import { forAwaitEach } from 'iterall';
 
 const array = [];
@@ -25,7 +25,7 @@ array.push('b');
 
 ```js
 import rdash from 'rethinkdbdash';
-import AsyncIterator from 'async-iterator-from';
+import { AsyncIterator } from 'async-iterator-from';
 import { forAwaitEach } from 'iterall';
 
 const r = rdash();
@@ -77,7 +77,7 @@ additional values to be added to the iterator.
 
 ### `.fromArray (values [, options])`
 
-Creates a new `AsyncIterator` from an `Array`. This is a convienience method and is the equivalent of calling new on the `AsyncIterator` class.
+Creates a new `AsyncIterator` from an `Array`. This is a convienience method and is the equivalent of calling new on the `AsyncIterator` class. Can also be imported with `import { fromArray } from 'async-iterator-from'`
 
 **Parameters**
 
@@ -90,7 +90,7 @@ additional values to be added to the iterator.
 
 ### `.fromEvent (emitter, event [, options])`
 
-Creates a new `AsyncIterator` from an `EventEmitter`.
+Creates a new `AsyncIterator` from an `EventEmitter`. Can also be imported with `import { fromEvent } from 'async-iterator-from'`
 
 **Parameters**
 
@@ -102,7 +102,7 @@ Creates a new `AsyncIterator` from an `EventEmitter`.
 
 ### `.fromStream (stream [, options])`
 
-Creates a new `AsyncIterator` from an `EventEmitter`.
+Creates a new `AsyncIterator` from an `EventEmitter`. Can also be imported with `import { fromStream } from 'async-iterator-from'`
 
 **Parameters**
 
