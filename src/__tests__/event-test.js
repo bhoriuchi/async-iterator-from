@@ -2,7 +2,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { EventEmitter } from 'events';
 import { forAwaitEach } from 'iterall';
-import AsyncIterator from '../index';
+import { AsyncIterator } from '../index';
 
 describe('Event test', function () {
   it('should create 3 events', function (done) {

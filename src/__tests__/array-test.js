@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { forAwaitEach } from 'iterall';
-import AsyncIterator from '../index';
+import { AsyncIterator } from '../index';
 
 describe('Array test', function () {
   it('should create 3 items', function (done) {
