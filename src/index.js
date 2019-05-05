@@ -68,7 +68,9 @@ class AsyncIteratorBacking {
     // build the iterator
     const iterator = {
       next() {
-        return _this.done ? iterator.return() : _this._next();
+        return _this.done && !_this.dataQueue.length
+          ? iterator.return()
+          : _this._next();
       },
       return() {
         call(this.onReturn);
